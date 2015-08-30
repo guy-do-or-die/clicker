@@ -1,8 +1,8 @@
 from selenium import webdriver
-from TorCtl import TorCtl
+from stem.control import Controller
+from stem import Signal
 
 import multiprocessing
-import subprocess
 import random
 import signal
 import time
@@ -10,15 +10,18 @@ import sys
 
 
 def reconn():
-    conn = TorCtl.connect(controlAddr='127.0.0.1', controlPort=9151)
-    conn.send_signal('NEWNYM')
-    conn.close()
+    with Controller.from_port(port=9051) as controller:
+        controller.authenticate()
+        controller.signal(Signal.NEWNYM)
 
 
 def inst(_id):
-    opts = webdriver.ChromeOptions()
-    opts.add_argument('--proxy-server=http://127.0.0.1:8118')
-    driver = webdriver.Chrome(chrome_options=opts)
+    try:
+        opts = webdriver.ChromeOptions()
+        opts.add_argument('--proxy-server=http://127.0.0.1:8118')
+        driver = webdriver.Chrome(chrome_options=opts)
+    except Exception as e:
+        print _id, e
 
     def handler(*args):
         driver.quit()
@@ -57,21 +60,11 @@ def inst(_id):
             fire()
         except Exception as e:
             print _id, e
-            if errs < 10:
-                errs += 1
-                continue
-            else:
-                print _id, ' is topping'
-                break
 
 try:
     num = int(sys.argv[1])
 except:
     num = 1
-
-sp = subprocess.Popen(['/bin/bash', '-i', '-c', 'tor &'])
-sp.communicate()
-time.sleep(5)
 
 pool = multiprocessing.Pool(num)
 
