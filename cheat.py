@@ -48,8 +48,7 @@ def inst(_id):
         els = driver.find_elements_by_class_name('sc-button-play')
         while len(els) > 0:
             el = random.choice(els)
-            driver.execute_script('window.scrollTo(0, %s)'
-                                  % (el.location['y'] - 200))
+            driver.execute_script('window.scrollTo(0, {0!s})'.format((el.location['y'] - 200)))
             el.click()
             time.sleep(7)
             els.remove(el)
